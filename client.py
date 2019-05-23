@@ -3,8 +3,8 @@ import os
 import subprocess
 
 s = socket.socket()
-host = '192.168.0.101'
-port = 6000
+host = '192.168.43.164'
+port = 9898
 
 print("Connecting to server")
 s.connect((host, port))
@@ -18,11 +18,11 @@ while True:
         continue
     if len(data) > 0:
         print(data)
-        reflex_data = input()
-        if "exit" in reflex_data:
-            print("close connection")
-            s.send(str.encode("terminating"))
-            s.close()
-            exit()
-        s.send(str.encode(reflex_data + '\n'))
+        # reflex_data = input()
+        # if "exit" in reflex_data:
+        #     print("close connection")
+        #     s.send(str.encode("terminating"))
+        #     s.close()
+        #     exit()
+        # s.send(str.encode(reflex_data + '\n'))
         # s.send(reflex_data)

@@ -18,7 +18,7 @@ def create_socket():
     global port
     global s
     host = ""
-    port = 6000
+    port = 9898
     s = socket.socket()
 
   except Exception as msg:
@@ -64,6 +64,7 @@ def start_turtle():
       list_connections()
     elif 'select' in cmd:
       conn = select_client(cmd)
+      conn.settimeout(1000)
       if conn is not None:
         send_target_commands(conn)
     elif 'quit' in cmd or 'exit' in cmd:
@@ -84,16 +85,16 @@ def start_turtle():
 def list_connections():
   if len(all_connections) == 0:
     print("There are no connections")
-  for i, conn in enumerate(all_connections):
-    try:
-      conn.send(str.encode(' '))
-      conn.recv(20480)
-    except Exception as err:
-      print("List connection err: {}".format(err))
-      del all_connections[i]
-      del all_address[i]
-      continue
-    print("Connection {} address: {} {}".format(i, all_address[i][0], all_address[i][1]))
+#   for i, conn in enumerate(all_connections):
+#     try:
+#       conn.send(str.encode(' '))
+#       conn.recv(20480)
+#     except Exception as err:
+#       print("List connection err: {}".format(err))
+#       del all_connections[i]
+#       del all_address[i]
+#       continue
+#     print("Connection {} address: {} {}".format(i, all_address[i][0], all_address[i][1]))
   print("Number of connections is: {}".format(len(all_connections)))
 
 
@@ -101,9 +102,9 @@ def list_connections():
 def select_client(cmd):
   try:
     target = cmd.replace('select ', '')
-    working_index = target
     target = int(target)
     conn = all_connections[target]
+    working_index = target
     print("You are now connected to :{}".format(all_address[target][0]))
     print("{}>".format(all_address[target][0]), end='')
     return conn
@@ -115,24 +116,32 @@ def select_client(cmd):
 # Send commands to client
 def send_target_commands(conn):
   while True:
-    try:
-      cmd = input()
-      if cmd == 'quit' or cmd == 'exit':
-        print("Come back to suhi")
-        break
-      if len(str.encode(cmd)):
-        conn.send(str.encode(cmd))
-        client_response = str(conn.recv(20480), "utf-8")
-        if client_response == 'terminating':
-          print("Client was closed")
-          conn.close()
-          del all_connections[working_index]
-          del all_address[working_index]
-          break
-        print(client_response, end="")
-    except:
-      print("Error sending commands")
+    # try:
+    #   cmd = input()
+    #   if cmd == 'quit' or cmd == 'exit':
+    #     print("Come back to suhi")
+    #     break
+    #   # if len(str.encode(cmd)):
+    #     # conn.send(str.encode(cmd))
+    client_response = str(conn.recv(20480), "utf-8")
+    #     # if len(client_response) > 0:
+    #       # print(client_response)
+    #     # if client_response == 'terminating':
+    #     #   print("Client was closed")
+    #     #   conn.close()
+    #     #   del all_connections[working_index]
+    #     #   del all_address[working_index]
+    #     #   break
+    print(client_response)
+    if client_response == "exit" or client_response == "quit":
+      conn.close()
+      del all_connections[working_index]
+      del all_address[working_index]
       break
+    # except:
+    #   print("Error sending commands")
+    #   break
+
 
 
 
@@ -142,9 +151,9 @@ def work():
   while True:
     x = queue.get()
     if x == 1:
-      create_socket()
-      bind_socket()
-      accepting_connections()
+      create_socket() # ok
+      bind_socket() # ok
+      accepting_connections() # ok
       time.sleep(0.5)
     if x == 2:
       time.sleep(0.5)
@@ -162,7 +171,6 @@ def create_jobs():
 
 # Create worker threads
 def create_workers():
-  workers = []
   for _ in range(NUMBER_OF_THREADS):
     t = threading.Thread(target=work)
     t.daemon = True
